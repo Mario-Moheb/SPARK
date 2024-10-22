@@ -1,7 +1,33 @@
-              
-- name: Publish app to Google App Engine
+name: Deploy to Google App Engine
 
+on:
+  push:
+    branches:
+      - main  # This deploys only when changes are pushed to the 'main' branch
 
-              
-  uses: zxyle/publish-gae-action@v2.3.0
+jobs:
+  deploy:
+    name: Deploy to GAE
+    runs-on: ubuntu-latest
 
+    steps:
+    # Checkout the code
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Authenticate with Google Cloud using the service account
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: '${{ secrets.GCP_SA_KEY }}'  # Service Account Key JSON stored in GitHub Secrets
+
+    # Set up Google Cloud SDK
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}  # Google Cloud Project ID stored in GitHub Secrets
+        export_default_credentials: true
+
+    # Deploy the application to Google App Engine
+    - name: Deploy to App Engine
+      run: gcloud app deploy --quiet  # --quiet to avoid prompts during the deployment
