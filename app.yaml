@@ -1,0 +1,14 @@
+runtime: python311
+
+automatic_scaling:
+  min_instances: 1
+
+
+entrypoint: sanic app.app --host=0.0.0.0 --port=$PORT
+
+inbound_services:
+- warmup
+
+handlers:
+  - url: /.*
+    script: auto

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Identify Piece - SPARK</title>
+    <!-- Link to the CSS file -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- First row: Logo -->
+        <div class="logo-container">
+            <img src="/static/images/godseye.png" alt="Godseye Logo" class="logo">
+        </div>
+
+        <!-- Second row: App Name with special styles -->
+        <div class="app-name-container">
+            <h1 class="app-name">SPARK</h1>
+            <p class="app-subtitle">Style Profile and Analysis Resource Kit</p>
+        </div>
+
+        <!-- Third row: Drag and Drop or Clickable Upload Box -->
+        <div class="upload-box" id="uploadBox">
+            <p id="uploadPrompt">Drag & Drop images here or click to upload multiple images</p>
+            <input type="file" id="fileInput" accept="image/*" multiple hidden> <!-- Multiple file support -->
+            <div id="uploadedImages" class="uploaded-images" style="display:none;"></div> <!-- Container for multiple images -->
+        </div>
+
+        <!-- Fourth row: Select boxes for brands and gender -->
+        <div class="options-row">
+            <!-- Select box for brands -->
+            <select id="brandSelect" class="select-box" required>
+                <option value="" disabled selected>Select Brand</option>
+                <option value="nike">Nike</option>
+                <option value="adidas">Adidas</option>
+                <option value="gucci">Gucci</option>
+                <option value="prada">Prada</option>
+                <option value="chanel">Chanel</option>
+                <option value="louis_vuitton">Louis Vuitton</option>
+                <option value="zara">Zara</option>
+                <option value="hm">H&M</option>
+                <option value="balenciaga">Balenciaga</option>
+                <option value="versace">Versace</option>
+                <option value="dior">Dior</option>
+                <option value="fendi">Fendi</option>
+                <option value="hermes">Hermès</option>
+                <option value="burberry">Burberry</option>
+                <option value="saint_laurent">Saint Laurent</option>
+                <option value="givenchy">Givenchy</option>
+                <option value="dolce_gabbana">Dolce & Gabbana</option>
+                <option value="tommy_hilfiger">Tommy Hilfiger</option>
+                <option value="ralph_lauren">Ralph Lauren</option>
+                <option value="armani">Armani</option>
+                <option value="calvin_klein">Calvin Klein</option>
+                <option value="off_white">Off-White</option>
+                <option value="valentino">Valentino</option>
+                <option value="moschino">Moschino</option>
+                <option value="alexander_mcqueen">Alexander McQueen</option>
+                <option value="kate_spade">Kate Spade</option>
+                <option value="loewe">Loewe</option>
+                <option value="jimmy_choo">Jimmy Choo</option>
+                <option value="stella_mccartney">Stella McCartney</option>
+                <option value="salvatore_ferragamo">Salvatore Ferragamo</option>
+                <option value="vans">Vans</option>
+                <option value="supreme">Supreme</option>
+                <option value="kenzo">Kenzo</option>
+                <option value="moncler">Moncler</option>
+                <option value="rebecca_minkoff">Rebecca Minkoff</option>
+                <option value="michael_kors">Michael Kors</option>
+                <option value="tory_burch">Tory Burch</option>
+                <option value="carolina_herrera">Carolina Herrera</option>
+                <option value="lacoste">Lacoste</option>
+                <option value="giuseppe_zanotti">Giuseppe Zanotti</option>
+                <option value="dsquared2">DSquared2</option>
+                <option value="burton">Burton</option>
+                <option value="marc_jacobs">Marc Jacobs</option>
+                <option value="victoria_secret">Victoria's Secret</option>
+                <option value="tom_ford">Tom Ford</option>
+                <option value="united_colors_of_benetton">United Colors of Benetton</option>
+                <option value="levi_strauss">Levi Strauss</option>
+                <option value="ralph_lauren">Ralph Lauren</option>
+                <option value="gap">Gap</option>
+                <option value="brooks_brothers">Brooks Brothers</option>
+                <option value="asos">ASOS</option>
+                <option value="patagonia">Patagonia</option>
+            </select>
+
+            <!-- Select box for menswear/womenswear -->
+            <select id="genderSelect" class="select-box" required>
+                <option value="menswear">Menswear</option>
+                <option value="womenswear">Womenswear</option>
+            </select>
+        </div>
+
+        <!-- Fifth row: Identify Button (now on its own line) -->
+        <div class="button-row">
+            <button class="identify-button" id="identifyBtn">Identify</button>
+        </div>
+<!-- Loading GIF (initially hidden) -->
+<div id="loading" style="display: none; margin-top: 10px;">
+    <img src="/static/images/loading.gif" alt="Loading..." width="50" height="50">
+</div>
+
+
+        <!-- Sixth row: Output for Title and Description with Labels -->
+        <div class="output-container">
+            <!-- Title Output Box -->
+            <div class="title-container">
+                <p class="output-label">Title</p>
+                <div class="title-box">
+                    <h2 id="outputTitle">...</h2>
+                </div>
+            </div>
+
+            <!-- Description Output Box -->
+            <div class="description-container">
+                <p class="output-label">Description</p>
+                <div class="description-box">
+                    <p id="outputText">...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const uploadBox = document.getElementById('uploadBox');
+    const fileInput = document.getElementById('fileInput');
+    const uploadedImages = document.getElementById('uploadedImages');
+    const uploadPrompt = document.getElementById('uploadPrompt');
+    const identifyBtn = document.getElementById('identifyBtn');
+    const outputTitle = document.getElementById('outputTitle'); // Title box
+    const outputText = document.getElementById('outputText');  // Description box
+    const brandSelect = document.getElementById('brandSelect');
+    const genderSelect = document.getElementById('genderSelect');
+    const loading = document.getElementById('loading');  // Loading GIF
+
+    let uploadedFiles = []; // Store selected files to upload when Identify is clicked
+
+    // Handle drag and drop functionality
+    uploadBox.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadBox.classList.add('dragover');
+    });
+
+    uploadBox.addEventListener('dragleave', () => {
+        uploadBox.classList.remove('dragover');
+    });
+
+    uploadBox.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadBox.classList.remove('dragover');
+        handleFilesUpload(e.dataTransfer.files); // Handle multiple file uploads
+    });
+
+    uploadBox.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        handleFilesUpload(e.target.files); // Handle multiple file uploads
+    });
+
+    // Handle multiple file uploads and store them for later upload
+    function handleFilesUpload(files) {
+        uploadedFiles = Array.from(files); // Store files for form submission
+        uploadedImages.innerHTML = ''; // Clear previous images
+        uploadPrompt.style.display = 'none'; // Hide the upload prompt
+
+        uploadedFiles.forEach((file) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.src = e.target.result;
+                img.style.maxWidth = '100px'; // Thumbnail size
+                img.style.margin = '5px';
+                uploadedImages.appendChild(img); // Add the image to the container
+            }
+            reader.readAsDataURL(file); // Read each file and display the images
+        });
+
+        uploadedImages.style.display = 'flex'; // Show uploaded images
+    }
+
+    // Handle form submission and upload images on "Identify" click
+    identifyBtn.addEventListener('click', async () => {
+        const brand = brandSelect.value;
+        const gender = genderSelect.value;
+
+        // Check if files are uploaded
+        if (uploadedFiles.length === 0) {
+            alert("Please upload images.");
+            return;
+        }
+
+        // Check if brand and gender are selected
+        if (!brand || !gender) {
+            alert("Please select both brand and gender.");
+            return;
+        }
+
+        // Show the loading GIF
+        loading.style.display = 'block';
+
+        // Prepare form data to send to the server
+        const formData = new FormData();
+        uploadedFiles.forEach((file, index) => {
+            formData.append('file', file); // Append each file to form data
+        });
+        formData.append('brand', brand);
+        formData.append('gender', gender);
+
+        try {
+            // Send the request to the server
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                // Get the response and update the output box
+                const result = await response.json();
+
+                // Update the title and description with data from the server
+                if (result.title) {
+                    outputTitle.textContent = result.title;  // Update title
+                } else {
+                    outputTitle.textContent = "No title returned from the server.";
+                }
+
+                if (result.description) {
+                    outputText.textContent = result.description;  // Update description
+                } else {
+                    outputText.textContent = "No description returned from the server.";
+                }
+            } else {
+                outputText.textContent = "Error: Could not fetch data from server.";
+            }
+        } catch (error) {
+            console.error("Error submitting form:", error);
+            outputText.textContent = "An error occurred during submission.";
+        } finally {
+            // Hide the loading GIF
+            loading.style.display = 'none';
+        }
+    });
+</script>
+
+
+
+</body>
+</html>
